@@ -48,6 +48,9 @@ const filters = [
 ]
 
 export function ProductFilters() {
+  const SearchParams = useSearchParams()
+  const router = useRouter()
+  const SearchValues = Array.from(SearchParams.entries())
   return (
     <form className="sticky top-20">
       <h3 className="sr-only">Categories</h3>
@@ -57,20 +60,42 @@ export function ProductFilters() {
           <AccordionItem value={`item-${i}`}>
             <AccordionTrigger>
               <span>
-                Section{" "}
-                <span className="ml-1 text-xs font-extrabold uppercase text-gray-400"></span>
+                {section.name} Section{" "}
+                <span className="ml-1 text-xs font-extrabold uppercase text-gray-400">
+                  {SearchParams.get(section.id)
+                    ? `(${SearchParams.get(section.id)})`
+                    : ""}
+                </span>
               </span>
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-4">
-                {section.options.map((option) => (
+                {section.options.map((option, optionIdx) => (
                   <div
                     key={option.value}
                     className="flex items-center space-x-2"
                   >
-                    <Checkbox />
-                    <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      Label
+                    <Checkbox
+                      id={`filter-${section.id}-${optionIdx}`}
+                      checked={SearchValues.some(
+                        ([key, value]) =>
+                          key === section.id && value === option.value
+                      )}
+                      onClick={(event: any) => {
+                        const params = new URLSearchParams(SearchParams)
+                        const checked =
+                          event.currentTarget.dataset.state === "checked"
+                        checked
+                          ? params.delete(section.id)
+                          : params.set(section.id, option.value)
+                        router.replace(`/?${params.toString()}`)
+                      }}
+                    />
+                    <label
+                      htmlFor={`filter-${section.id}-${optionIdx}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {option.label}
                     </label>
                   </div>
                 ))}
