@@ -12,15 +12,28 @@ import { ThemeToggle } from "@/components/theme-toggle"
 
 export function SiteHeader() {
   const pathname = usePathname()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const defaultSearchQuery = searchParams.get("search") ?? ""
   if (pathname.startsWith("/studio")) {
     return null
+  }
+  function onSubmit(event: React.SyntheticEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    const searchQuery = formData.get("search")
+    router.replace(`/?search=${searchQuery}`)
   }
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between space-x-4 px-6 sm:space-x-0">
         <MainNav />
-        <form className="hidden items-center lg:inline-flex">
+        <form
+          onSubmit={onSubmit}
+          className="hidden items-center lg:inline-flex"
+        >
           <Input
+            defaultValue={defaultSearchQuery}
             id="search"
             name="search"
             type="search"
