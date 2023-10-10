@@ -7,11 +7,30 @@ import { formatCurrencyString, useShoppingCart } from "use-shopping-cart"
 import { Button } from "@/components/ui/button"
 
 export function CartSummary() {
-  const { cartDetails, cartCount, formattedTotalPrice, totalPrice } =
-    useShoppingCart()
+  const {
+    cartDetails,
+    redirectToCheckout,
+    cartCount,
+    formattedTotalPrice,
+    totalPrice,
+  } = useShoppingCart()
+  const [isLoading, setIsLoading] = useState(false)
+  const isDisabled = isLoading || cartCount! === 0
   const shippingAmount = cartCount! > 0 ? 500 : 0
   const totalAmount = totalPrice! + shippingAmount
-  function onCheckout() {}
+  async function onCheckout() {
+    setIsLoading(true)
+    const response = await fetch("/api/checkout", {
+      method: "POST",
+      body: JSON.stringify(cartDetails),
+    })
+    const data = await response.json()
+    const result = await redirectToCheckout(data.id)
+    if (result?.response) {
+      console.log(result)
+    }
+    setIsLoading(false)
+  }
 
   return (
     <section
@@ -44,9 +63,9 @@ export function CartSummary() {
       </dl>
 
       <div className="mt-6">
-        <Button className="w-full">
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Loading...
+        <Button onClick={onCheckout} className="w-full" disabled={isDisabled}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isLoading ? "Loading..." : "checkout"}
         </Button>
       </div>
     </section>
